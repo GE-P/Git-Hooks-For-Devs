@@ -1,0 +1,24 @@
+#!/bin/sh
+
+######################################
+# post-commit script
+# Utilité: Ce script sert à récupérer les commits-log dans un fichier et à le push dans le repo.
+# Usage: Automatique avec la commande git commit
+# Auteur: Gerhard Eibl (DevOps)
+# Mise à jour le: 07/12/2021
+# Version : 1.0
+######################################
+
+if [[ -e .commit ]]; then
+
+  rm .commit
+
+  git log --pretty=format:"%ad%x09%an%x09%s" --date=short > CHANGELOG
+
+  git add CHANGELOG
+
+  git commit --amend --no-edit --no-verify
+
+fi
+
+exit

@@ -1,0 +1,16 @@
+#!/bin/sh
+
+######################################
+# pre-commit script
+# Utilité: Ce script sert à créer un leurre pour le post-commit, pour eviter une boucle infinie.
+# Usage: Automatique avec la commande git commit
+# Auteur: Gerhard Eibl (DevOps)
+# Mise à jour le: 07/12/2021
+# Version : 1.0
+######################################
+
+echo
+
+touch .commit
+
+exit

@@ -1,0 +1,27 @@
+#!/bin/sh
+
+######################################
+# commit-msg script
+# Utilité: Ce script sert à vérifier la convention de nommage des commits.
+# Usage: Automatique avec la commande git commit
+# Auteur: Gerhard Eibl (DevOps)
+# Mise à jour le: 24/01/2022
+# Version : 2.1
+######################################
+
+REGEX="(feat|fix|ci|perf|revert|docs|style|refactor|test|chore|wip|version|build|git|merge)([^[:space:]]((.*))[^[:space:]]|): .+"
+
+LINE=0
+
+RED="\e[31m"
+GREEN="\e[32m"
+ENDCOLOR="\e[0m"
+
+while read LINE; do
+  if [[ $LINE =~ $REGEX ]]; then
+    echo -e "${GREEN}La convention est respectée, le commit aussi, cordialement, votre DevOps.${ENDCOLOR}"
+  else
+    echo -e "${RED}La convention n'est pas respectée, veuillez vérifier la syntaxe de votre commit, cordialement, votre DevOps.${ENDCOLOR}"
+    exit 1
+  fi
+done <$1
