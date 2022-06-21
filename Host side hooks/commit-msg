@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ######################################
 # commit-msg script
@@ -6,10 +6,10 @@
 # Usage: Automatique avec la commande git commit
 # Auteur: Gerhard Eibl (DevOps)
 # Mise à jour le: 24/01/2022
-# Version : 2.1
+# Version : 2.2
 ######################################
 
-REGEX="(feat|fix|ci|perf|revert|docs|style|refactor|test|chore|wip|version|build|git|merge)([^[:space:]]((.*))[^[:space:]]|): .+"
+REGEX="(^(feat|fix|ci|perf|revert|docs|style|refactor|test|chore|wip|version|build|git|merge))(\([a-zA-Z0-9]+\))?: [a-zA-Z0-9].+"
 
 LINE=0
 
