@@ -1,0 +1,106 @@
+#!/bin/bash
+
+# Hooks for devs
+# Author: Gerhard Eibl
+# Version: 5.1.0
+
+zero_commit="0000000000000000000000000000000000000000"
+special_character=$(echo -e "\u200B")
+regex="(^(feat|feat-M|fix|ci|perf|revert|docs|style|refactor|test|chore|wip|version|build|git|merge))(\([a-zA-Z0-9]+\))?: [a-zA-Z0-9].+"
+RED="\e[31m"
+GREEN="\e[32m"
+BLUE="\e[34m"
+ENDCOLOR="\e[0m"
+
+while read oldrev newrev refname; do
+
+    # Skip branch deletions
+    if [[ $newrev == $zero_commit ]]; then
+        continue
+    fi
+
+    # Get the committer's branch name
+    committer_branch=$(git rev-parse --symbolic --abbrev-ref "$refname")
+
+    # Get the last accepted commit on the branch
+    last_accepted_commit=$(git rev-parse "$refname")
+
+    # Retrieve all the new commits starting from the last one on the remote
+    commits=$(git rev-list "$newrev" "^$last_accepted_commit")
+
+    # Iterate over each new commit
+    for commit in $commits; do
+
+        # Get the commit message
+        message=$(git log --format=%B -n 1 "$commit")
+        message_without_special_char=$(echo "$message" | sed -e "s/$special_character$//" -e "s/\\n//g")
+
+        last_chars=${message: -${#special_character}}
+
+        # Check if the commit is in the "main" or "master" branch
+        if [[ $committer_branch == "main" || $committer_branch == "master" ]]; then
+
+            # Check if the commit message starts with "merge:"
+            if git rev-parse --quiet --verify "$newrev^2" >/dev/null; then
+
+                # Check if the commit ends with the special character
+                if [[ $last_chars == $special_character ]]; then
+
+                    # Check if the commit message matches the regex
+                    if [[ $message_without_special_char =~ $regex ]]; then
+                        echo -e "${GREEN}Commit${ENDCOLOR} ${BLUE}<$message_without_special_char>${ENDCOLOR} ${GREEN}conforme à la convention, commit accepté.${ENDCOLOR}"
+                    else
+                        echo -e "${RED}Commit${ENDCOLOR} ${BLUE}<$message_without_special_char>${ENDCOLOR} ${RED}non conforme à la convention, ajustez le commit.${ENDCOLOR}"
+                        exit 1
+                    fi
+                else
+                    # echo -e "${RED}Les hooks locaux ne sont pas installés dans le projet, veuillez les installer et réessayer.${ENDCOLOR}"
+
+                    echo -e "${RED}Les hooks locaux ne sont pas installés dans le projet, veuillez les installer ultérieurement.${ENDCOLOR}"
+
+                    # Check if the commit message matches the regex
+                    if [[ $message_without_special_char =~ $regex ]]; then
+                        echo -e "${GREEN}Commit${ENDCOLOR} ${BLUE}<$message_without_special_char>${ENDCOLOR} ${GREEN}conforme à la convention, commit accepté.${ENDCOLOR}"
+                    else
+                        echo -e "${RED}Commit${ENDCOLOR} ${BLUE}<$message_without_special_char>${ENDCOLOR} ${RED}non conforme à la convention, ajustez le commit.${ENDCOLOR}"
+                        exit 1
+                    fi
+
+                    # exit 1
+                fi
+            else
+                echo -e "${RED}Le push reçu sur '$committer_branch' ne provient pas d'un merge. Les Push sur '$committer_branch' doivent être précédé d'un merge.${ENDCOLOR}"
+                exit 1
+            fi
+        else
+            # Check if the commit ends with the special character
+            if [[ $last_chars == $special_character ]]; then
+
+                # Check if the commit message matches the regex
+                if [[ $message =~ $regex ]]; then
+                    echo -e "${GREEN}Commit${ENDCOLOR} ${BLUE}<$message_without_special_char>${ENDCOLOR} ${GREEN}conforme à la convention, commit accepté.${ENDCOLOR}"
+                else
+                    echo -e "${RED}Commit${ENDCOLOR} ${BLUE}<$message_without_special_char>${ENDCOLOR} ${RED}non conforme à la convention, ajustez le commit.${ENDCOLOR}"
+                    exit 1
+                fi
+            else
+                # echo -e "${RED}Les hooks locaux ne sont pas installés dans le projet, veuillez les installer et réessayer.${ENDCOLOR}"
+
+                echo -e "${RED}Les hooks locaux ne sont pas installés dans le projet, veuillez les installer ultérieurement.${ENDCOLOR}"
+
+                if [[ $message =~ $regex ]]; then
+                    echo -e "${GREEN}Commit${ENDCOLOR} ${BLUE}<$message_without_special_char>${ENDCOLOR} ${GREEN}conforme à la convention, commit accepté.${ENDCOLOR}"
+                else
+                    echo -e "${RED}Commit${ENDCOLOR} ${BLUE}<$message_without_special_char>${ENDCOLOR} ${RED}non conforme à la convention, ajustez le commit.${ENDCOLOR}"
+                    exit 1
+                fi
+
+                # exit 1
+            fi
+        fi
+
+    done
+
+done
+
+exit 0

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Hooks for devs
+# Author: Gerhard Eibl
+# Version: 5.1.0
+
+commit_message_file=$1
+
+echo -e "\u200B" >> "$commit_message_file"
+

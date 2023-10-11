@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# Hooks for devs
+# Author: Gerhard Eibl
+# Version: 5.1.0
+
+REGEX="(^(feat|feat-M|fix|ci|perf|revert|docs|style|refactor|test|chore|wip|version|build|git|merge))(\([a-zA-Z0-9]+\))?: [a-zA-Z0-9].+"
+
+RED="\e[31m"
+GREEN="\e[32m"
+BLUE="\e[34m"
+ENDCOLOR="\e[0m"
+
+special_character=$(echo -e "\u200B")
+commit_message_file=$1
+commit_message=$(cat "$commit_message_file")
+message_without_special_char=$(echo "$commit_message" | sed -e "s/$special_character$//" -e "s/\\n//g")
+
+if [[ $commit_message =~ $REGEX ]]; then
+  echo -e "local: ${GREEN}Commit${ENDCOLOR} ${BLUE}<$message_without_special_char>${ENDCOLOR} ${GREEN}conforme à la convention, commit accepté.${ENDCOLOR}"
+else
+  echo -e "local: ${RED}Commit${ENDCOLOR} ${BLUE}<$message_without_special_char>${ENDCOLOR} ${RED} non conforme à la convention, vérifiez la syntaxe de votre commit.${ENDCOLOR}"
+  exit 1
+fi
